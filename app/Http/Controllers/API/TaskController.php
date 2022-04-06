@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Http\Controllers\API;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use GuzzleHttp\Client;
+use Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+
+class TaskController extends Controller
+{
+	/**
+	 * Display a listing of the resource.
+	 *
+	 * @return \Illuminate\Http\Response
+	 */
+	public function index()
+	{
+
+
+
+		if (isset(Auth::user()->id)) {
+			$ids = Auth::user()->emp_id;
+			$announcement = Http::get('http://localhost/suprsales_api/Announcement/create_announcement/getAnnouncementByRegion.php?id=' . $ids)->json();
+
+			$ann = Http::get('http://localhost/suprsales_api/Auth_Reference/?id=' . $ids)->json();
+			$task = Http::get('http://localhost/suprsales_api/Task/getTaskByEmp.php?id=' . $ids)->json();
+			$priority = Http::get('http://localhost/suprsales_api/Task/taskPriorityChartByEmp.php?id=' . $ids)->json();
+			$task_status = Http::get('http://localhost/suprsales_api/Task/taskStatusChartByEmp.php?id=' . $ids)->json();
+			$emp = Http::get('http://localhost/suprsales_api/Employee/getReportingEmp.php?id=' . $ids)->json();
+			$team_status =  Http::get('http://localhost/suprsales_api/Task/teamStatusChartByEmp.php?id=' . $ids)->json();
+
+			$count = 0;
+			if (isset($ann)) {
+				foreach ($ann as $val) {
+					if ($val['auth_reference'] == 'task') {
+						$count = 1;
+						break;
+					}
+				}
+			}
+
+			if ($count == 1) {
+				return view('task')->with(compact('announcement', 'ann', 'emp', 'task', 'priority', 'task_status', 'team_status'));
+			} else {
+				return redirect('error');
+			}
+		} else {
+			return redirect('userlogin');
+		}
+	}
+
+	/**
+	 * Store a newly created resource in storage.
+	 *
+	 * @param  \Illuminate\Http\Request  $request
+	 * @return \Illuminate\Http\Response
+	 */
+	public function store(Request $request)
+	{
+		$TASK_NAME = $request->get('TASK_NAME');
+		$PRIORITY = $request->get('PRIORITY');
+		$COLOR = $request->get('COLOR');
+		$ASSIGNED_TO = $request->get('ASSIGNED_TO');
+		$START_DATE = $request->get('START_DATE');
+		$DUE_DATE = $request->get('DUE_DATE');
+		$NOTES = $request->get('NOTES');
+		$ids = Auth::user()->emp_id;
+
+		list($month1, $day1, $year1) = explode('/', $START_DATE);
+		$start_date = $year1 . '-' . $month1 . '-' . $day1;
+
+		list($month2, $day2, $year2) = explode('/', $DUE_DATE);
+		$due_date = $year2 . '-' . $month2 . '-' . $day2;
+
+
+
+		$client = new Client([
+			// Base URI is used with relative requests
+			'base_uri' => 'http://localhost',
+		]);
+
+		$response = $client->request('POST', '/suprsales_api/Task/createTask.php', [
+			'json' => [
+				'TASK_NAME' => $TASK_NAME,
+				'PRIORITY' => $PRIORITY,
+				'COLOR' => $COLOR,
+				'ASSIGNED_TO' => $ASSIGNED_TO,
+				'START_DATE' => $start_date,
+				'DUE_DATE' => $due_date,
+				'NOTES' => $NOTES,
+				'CREATED_BY' => $ids
+			]
+		]);
+
+		if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 300) {
+			return redirect('/task')->with('message', 'Task Created Successfully');
+		} else {
+			return redirect('/task')->with('error', 'Task Not Created');
+		}
+	}
+
+	/**
+	 * Display the specified resource.
+	 *
+	 * @param  int  $id
+	 * @return \Illuminate\Http\Response
+	 */
+	public function show(Request $request, $id)
+	{
+		if (isset(Auth::user()->id)) {
+
+			$id = $request->route('task');
+			$ids = Auth::user()->emp_id;
+
+			$details = Http::get('http://localhost/suprsales_api/Task/getTaskByEmp.php?id=' . $ids)->json();
+
+			$count = 0;
+
+			if (isset($details)) {
+				foreach ($details as $value) {
+					if ($value['TASK_ID'] == $id) {
+						$count = 1;
+						break;
+					}
+				}
+			}
+
+			if ($count != 0) {
+
+				$announcement = Http::get('http://localhost/suprsales_api/Announcement/create_announcement/getAnnouncementByRegion.php?id=' . $ids)->json();
+
+				$ann = Http::get('http://localhost/suprsales_api/Auth_Reference/?id=' . $ids)->json();
+
+				$task_det = Http::get('http://localhost/suprsales_api/Task/getTaskDetail.php?id=' . $id)->json();
+				$emp = Http::get('http://localhost/suprsales_api/Employee/getReportingEmp.php?id=' . $ids)->json();
+
+				return view('activity')->with(compact('announcement', 'ann', 'task_det', 'emp'));
+			} else {
+				return redirect('error');
+			}
+		} else {
+			return redirect('userlogin');
+		}
+	}
+
+	/**
+	 * Update the specified resource in storage.
+	 *
+	 * @param  \Illuminate\Http\Request  $request
+	 * @param  int  $id
+	 * @return \Illuminate\Http\Response
+	 */
+	public function update(Request $request, $id)
+	{
+		//
+	}
+
+	/**
+	 * Remove the specified resource from storage.
+	 *
+	 * @param  int  $id
+	 * @return \Illuminate\Http\Response
+	 */
+	public function destroy($id)
+	{
+		//
+	}
+}

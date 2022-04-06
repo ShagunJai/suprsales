@@ -1,0 +1,13 @@
+1. Protected data inside $routeMiddleware {C:\xampp\htdocs\suprsales\app\Http} 
+2.Service Provider : Api and Web -RouteServiceProvider{C:\xampp\htdocs\suprsales\app\Providers}
+3.All Laravel Framework Service Providers. app.php {C:\xampp\htdocs\suprsales\config}
+4.All Build JS file- {C:\xampp\htdocs\suprsales\resources\build\js}
+5.css file from  plugins,parts,pages {C:\xampp\htdocs\suprsales\resources\build\scss}
+6.Auth,Password,Validation {C:\xampp\htdocs\suprsales\resources\lang\en}
+7.Plugins contais all bootstrap file with css and js {C:\xampp\htdocs\suprsales\resources\plugins}
+8.Select2 used for the form {C:\xampp\htdocs\suprsales\resources\plugins\select2}
+9.select2-bootstrap4-theme {C:\xampp\htdocs\suprsales\resources\plugins\select2-bootstrap4-theme}
+10. In login page after click "I forgot my password"   {C:\xampp\htdocs\suprsales\resources\views\auth\password}       Email.blade.php
+11.After recover email to set password {C:\xampp\htdocs\suprsales\resources\views\auth\password} reset.blade.php
+12.Email verifiction Verify Your Email Address {C:\xampp\htdocs\suprsales\resources\views\auth\password}
+13.
